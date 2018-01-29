@@ -14,6 +14,7 @@ type Arena struct {
 	betrayedGain    int
 	bothBetrayGain  int
 	scores          map[int64]int
+	scoresWithName  map[string]int
 }
 
 func NewArena() *Arena {
@@ -24,11 +25,13 @@ func NewArena() *Arena {
 		bothBetrayGain:  1,
 		coopGain:        3,
 		scores:          make(map[int64]int),
+		scoresWithName:  make(map[string]int),
 	}
 }
 
-func (a *Arena) AddScore(pID int64, s int) {
-	a.scores[pID] += s
+func (a *Arena) AddScore(p Player, s int) {
+	a.scores[p.ID()] += s
+	a.scoresWithName[p.Name()] += s
 }
 
 func (a *Arena) AddPlayer(player Player) {
@@ -63,16 +66,16 @@ func (a *Arena) Match(p1 Player, p2 Player) {
 		} else {
 			gain = a.bothBetrayGain
 		}
-		a.AddScore(p1.ID(), gain)
-		a.AddScore(p2.ID(), gain)
+		a.AddScore(p1, gain)
+		a.AddScore(p2, gain)
 	}
 	if p1Coop && !p2Coop {
-		a.AddScore(p1.ID(), a.betrayedGain)
-		a.AddScore(p2.ID(), a.betrayerGain)
+		a.AddScore(p1, a.betrayedGain)
+		a.AddScore(p2, a.betrayerGain)
 	}
 	if !p1Coop && p2Coop {
-		a.AddScore(p1.ID(), a.betrayerGain)
-		a.AddScore(p2.ID(), a.betrayedGain)
+		a.AddScore(p1, a.betrayerGain)
+		a.AddScore(p2, a.betrayedGain)
 	}
 	a.acknowledge(p1, p2.ID(), p2Coop)
 	a.acknowledge(p2, p1.ID(), p1Coop)
@@ -103,6 +106,7 @@ func (a *Arena) shuffleplayers() {
 	}
 }
 
-func (a *Arena) LeaderBoard() map[int64]int {
-	return a.scores
+// TODO: change to sorted map
+func (a *Arena) LeaderBoard() map[string]int {
+	return a.scoresWithName
 }
